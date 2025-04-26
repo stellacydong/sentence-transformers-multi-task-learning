@@ -1,0 +1,27 @@
+# Dockerfile
+# Use a slim Python base image for a small footprint
+FROM python:3.10-slim
+
+# Metadata
+LABEL maintainer="Your Name <you@example.com>"
+LABEL description="Container for Sentence Transformer & Multi-Task Learning scripts"
+
+# Install system dependencies (if needed for building wheels)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential git && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy and install Python dependencies first (cache layer)
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
+
+# Copy your scripts into the image
+COPY 01_sentence_transformer.py 02_multitask_learning.py ./
+
+# Default command: you can override on docker run to launch either script
+CMD ["python", "01_sentence_transformer.py"]

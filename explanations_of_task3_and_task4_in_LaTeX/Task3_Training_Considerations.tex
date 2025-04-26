@@ -1,0 +1,98 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{booktabs}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{Task 3: Training Considerations}
+\author{ML Apprentice Take-Home Exercise}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{Introduction}
+Fine-tuning a multi-task Transformer demands careful choices about which parameters to update and which to hold fixed. These decisions affect convergence speed, overfitting risk, and how well the model can adapt to each downstream objective. Below, we examine three freezing scenarios and then outline a progressive transfer-learning workflow.
+
+\section{Entire Network Frozen}
+All parameters---both the shared Transformer encoder and the task-specific heads---are held fixed at their pretrained values.
+
+\subsection*{Advantages}
+\begin{itemize}
+  \item \textbf{Zero fine-tuning cost}: No gradient computations, enabling fast inference and feature extraction.
+  \item \textbf{No catastrophic forgetting}: Preserves all pretrained knowledge intact.
+\end{itemize}
+
+\subsection*{Limitations}
+\begin{itemize}
+  \item \textbf{No task adaptation}: Cannot specialize representations to new tasks, often leading to suboptimal performance.
+\end{itemize}
+
+\subsection*{When to Use}
+\begin{itemize}
+  \item Rapid prototyping or very low-resource settings where any fine-tuning risks overfitting.
+\end{itemize}
+
+\section{Freeze Transformer Backbone Only}
+The Transformer encoder layers are frozen; only the task-specific heads are trainable.
+
+\subsection*{Advantages}
+\begin{itemize}
+  \item \textbf{Fast convergence}: Trains only a small number of head parameters.
+  \item \textbf{Regularization}: Retains general-purpose pretrained representations.
+\end{itemize}
+
+\subsection*{Limitations}
+\begin{itemize}
+  \item \textbf{Limited representational flexibility}: Deeper features cannot adapt to new task-specific patterns.
+\end{itemize}
+
+\subsection*{When to Use}
+\begin{itemize}
+  \item Moderate dataset sizes where head adaptation suffices while minimizing overfitting.
+\end{itemize}
+
+\section{Freeze One Task-Specific Head Only}
+One of the two task heads (classification or NER) is frozen, while the backbone and the other head remain trainable.
+
+\subsection*{Advantages}
+\begin{itemize}
+  \item \textbf{Selective stability}: Maintains performance on the frozen task.
+  \item \textbf{Targeted capacity}: Focuses model capacity on improving the underperforming task.
+\end{itemize}
+
+\subsection*{Limitations}
+\begin{itemize}
+  \item \textbf{Asymmetric adaptation}: The frozen head cannot benefit from updated shared representations.
+\end{itemize}
+
+\subsection*{When to Use}
+\begin{itemize}
+  \item Imbalanced tasks where one has abundant data and the other is low-resource or noisy.
+\end{itemize}
+
+\section{Progressive Transfer Learning Workflow}
+To leverage pretrained knowledge effectively while adapting to multi-task objectives, we recommend staged unfreezing:
+
+\begin{center}
+\begin{tabular}{l l l}
+\toprule
+\textbf{Stage} & \textbf{Frozen Layers} & \textbf{Trainable Layers} \\
+\midrule
+Head-Only Tuning   & All encoder layers                & Both task heads           \\
+Partial Unfreeze   & Bottom N transformer blocks       & Top transformer blocks + heads \\
+Full Fine-Tuning   & None                              & Entire model              \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Rationale Behind Choices}
+\begin{itemize}
+  \item \textbf{Progressive Unfreezing:} Gradually expose more layers to training to prevent catastrophic forgetting.
+  \item \textbf{Differential Learning Rates:} Apply lower learning rates to encoder layers (e.g., 1e-5) and higher rates to task heads (e.g., 5e-5).
+  \item \textbf{Validation-Guided Strategy:} Use separate validation metrics for each task to inform unfreezing and learning rate adjustments.
+\end{itemize}
+
+
+\end{document}

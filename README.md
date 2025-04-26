@@ -1,191 +1,94 @@
-# README.md
+# sentence-transformers-Multi-Task-Learning
 
-```markdown
-# ML Apprentice Take-Home Exercise
-
-This repository contains solutions for the **ML Apprentice** take-home exercise focused on Sentence Transformers and Multi-Task Learning.
+This repository contains solutions for the ML Apprentice take-home exercise on Sentence Transformers & Multi-Task Learning. It organizes code, notebooks, write-ups, and Docker support for reproducibility.
 
 ## Repository Structure
-
-```bash
-├── 01_sentence_transformer.py         # Task 1: Sentence Transformer Implementation
-├── 02_multitask_learning.py          # Task 2: Multi-Task Learning Expansion
-├── 03_training_considerations.py      # Task 3: Training Considerations (write-up)
-├── 04_training_loop_implementation.py # Task 4: Training Loop Implementation (BONUS)
-├── requirements.txt                   # Python dependencies
-├── Dockerfile                         # Containerization setup
-├── README.md                          # Project overview and instructions
-├── .gitignore                         # Git ignore patterns
-└── LICENSE                            # MIT License
+```
+├── 01_sentence_transformer.py               # Task 1: Sentence Transformer script
+├── 02_multitask_learning.py                # Task 2: Multi-Task Learning script
+├── notebooks/                              # Jupyter notebooks mirroring each task
+│   ├── 01_sentence_transformer.ipynb
+│   ├── 02_multitask_learning.ipynb
+│   ├── 03_training_considerations.ipynb
+│   └── 04_training_loop_implementation.ipynb
+├── explanations_of_task3_and_task4_in_LaTeX/ # LaTeX source for detailed write-ups
+│   ├── Task3_Training_Considerations.tex
+│   └── Task4_Training_Loop_Implementation.tex
+├── Task3_Training_Considerations.pdf       # PDF summary for Task 3
+├── Task4_Training_Loop_Implementation.pdf   # PDF summary for Task 4
+├── requirements.txt                        # Python dependencies
+├── Dockerfile                              # Containerization definition
+├── README.md                               # Project overview (this file)
+└── LICENSE                                 # MIT license
 ```
 
-## Setup
+## Setup and Installation
 
-1. **Clone this repository**
-   ```bash
-   git clone https://github.com/your-username/ml-apprentice-exercise.git
-   cd ml-apprentice-exercise
-   ```
+### 1. Clone the repository
+```bash
+git clone https://github.com/your-username/sentence-transformers-Multi-Task-Learning.git
+cd sentence-transformers-Multi-Task-Learning
+```
 
-2. **Create a virtual environment**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
+### 2. Environment Setup
 
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+**Using virtualenv**:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
 
-## Tasks Overview
-
-### Task 1: Sentence Transformer Implementation
-- Implements `SentenceTransformerModel` using Hugging Face Transformers.
-- Encodes sample sentences into fixed-length embeddings.
-- See `01_sentence_transformer.py` for code and detailed comments.
-
-### Task 2: Multi-Task Learning Expansion
-- Extends the sentence transformer with two heads:
-  - **Task A**: Sentence classification
-  - **Task B**: Named Entity Recognition (NER)
-- Shared encoder with task-specific heads and combined loss.
-- See `02_multitask_learning.py` for implementation details.
-
-### Task 3: Training Considerations
-- Discusses parameter-freezing scenarios and transfer-learning strategies.
-- Explains when to freeze the entire network, only the backbone, or individual heads.
-- Provides rationale balancing performance, compute, and overfitting risk.
-- See `03_training_considerations.py` for the full write-up and key insights.
-
-### Task 4: Training Loop Implementation (BONUS)
-- Illustrates a multi-task training loop with combined loss and per-task metrics.
-- Covers data handling, forward pass, and metrics calculation.
-- See `04_training_loop_implementation.py` for code and explanatory comments.
+**Using Conda** (optional):
+```bash
+conda env create -f environment.yml
+conda activate ml_apprentice
+```
 
 ## Usage
 
-Run each script individually:
+### Run scripts directly
 ```bash
+# Task 1
 python 01_sentence_transformer.py
+
+# Task 2
 python 02_multitask_learning.py
+
+# Task 4 (BONUS)
 python 04_training_loop_implementation.py
 ```
 
-## Docker Container (Optional)
+### Jupyter Notebooks
+Launch any notebook in the `notebooks/` folder:
+```bash
+jupyter lab notebooks/01_sentence_transformer.ipynb
+```
 
-To build and run the project in a Docker container:
-
-1. **Build the Docker image**
+### Docker (Extra Credit)
+1. **Build image**:
    ```bash
-   docker build -t ml-apprentice-exercise .
-   ```
-
-2. **Run a specific task** (e.g., Task 1)
+docker build -t stm-mtl .
+```
+2. **Run default script (Task 1)**:
    ```bash
-   docker run --rm ml-apprentice-exercise python 01_sentence_transformer.py
-   ```
-
-3. **Enter an interactive shell** within the container:
+docker run --rm stm-mtl
+```
+3. **Override command**:
    ```bash
-   docker run --rm -it ml-apprentice-exercise bash
-   ```
+docker run --rm stm-mtl python 02_multitask_learning.py
+```
+4. **Interactive shell**:
+   ```bash
+docker run --rm -it stm-mtl bash
+```
 
-## Brief Summaries of Key Tasks
-
-### Task 3 Summary
-- **Freezing Scenarios:** Entire network, backbone only, or individual heads.
-- **Transfer Learning Workflow:** Staged unfreeze strategy (head-only → partial → full fine-tuning).  
-- **Rationale:** Balance rapid convergence, regularization, and representational specialization.
-
-### Task 4 Summary
-- **Training Loop:** Handles multi-task batches via a custom `collate_fn`.  
-- **Forward Pass:** Single pass yields both sentence-level and token-level logits.  
-- **Metrics:** Sentence accuracy for Task A; token accuracy (excluding padding) for Task B.  
-- **MTL Dynamics:** Joint gradient flow encourages shared representations beneficial to both tasks.
+## Design Highlights
+- **Modular code**: Separate scripts for each task, clear function definitions, and comments explaining design choices.
+- **Detailed write-ups**: LaTeX and PDF summaries for Task 3 (training considerations) and Task 4 (training loop).
+- **Reproducibility**: `requirements.txt`, optional `environment.yml`, and a Dockerfile ensure consistent environments.
 
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
-```
-
----
-
-# .gitignore
-
-```
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Virtual environment
-venv/
-.env
-
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints
-
-# Docker files
-Dockerfile
-
-# Logs and data
-*.log
-*.csv
-*.pt
-*.pth
-
-# macOS
-.DS_Store
-```
-
----
-
-# Dockerfile
-
-```
-# Use official Python 3.10 image
-FROM python:3.10-slim
-
-# Working directory
-WORKDIR /app
-
-# Copy requirements and install
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy all project files
-COPY . .
-
-# Default command (runs Task 1 example)
-CMD ["python", "01_sentence_transformer.py"]
-```
-
----
-
-# LICENSE (MIT)
-
-```
-MIT License
-
-Copyright (c) 2025 Your Name
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is furnished
-to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
