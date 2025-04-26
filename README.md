@@ -1,4 +1,4 @@
-# sentence-transformers-Multi-Task-Learning
+# sentence-transformers-multi-task-learning
 
 This repository contains solutions for the ML Apprentice take-home exercise on Sentence Transformers & Multi-Task Learning. It organizes code, notebooks, write-ups, and Docker support for reproducibility.
 
@@ -26,8 +26,8 @@ This repository contains solutions for the ML Apprentice take-home exercise on S
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/sentence-transformers-Multi-Task-Learning.git
-cd sentence-transformers-Multi-Task-Learning
+git clone https://github.com/your-username/sentence-transformers-multi-task-learning.git
+cd sentence-transformers-multi-task-learning
 ```
 
 ### 2. Environment Setup
@@ -56,8 +56,6 @@ python 01_sentence_transformer.py
 # Task 2
 python 02_multitask_learning.py
 
-# Task 4 (BONUS)
-python 04_training_loop_implementation.py
 ```
 
 ### Jupyter Notebooks
@@ -67,27 +65,27 @@ jupyter lab notebooks/01_sentence_transformer.ipynb
 ```
 
 ### Docker (Extra Credit)
-1. **Build image**:
-   ```bash
-docker build -t stm-mtl .
-```
-2. **Run default script (Task 1)**:
-   ```bash
-docker run --rm stm-mtl
-```
-3. **Override command**:
-   ```bash
-docker run --rm stm-mtl python 02_multitask_learning.py
-```
-4. **Interactive shell**:
-   ```bash
-docker run --rm -it stm-mtl bash
-```
 
-## Design Highlights
-- **Modular code**: Separate scripts for each task, clear function definitions, and comments explaining design choices.
-- **Detailed write-ups**: LaTeX and PDF summaries for Task 3 (training considerations) and Task 4 (training loop).
-- **Reproducibility**: `requirements.txt`, optional `environment.yml`, and a Dockerfile ensure consistent environments.
+1. **Build the Docker image**  
+   ```bash
+   docker build -t sentence-transformers-mtl .
+   ```
+
+2. **Run the default script (Task 1)**  
+   ```bash
+   docker run --rm sentence-transformers-mtl
+   ```
+
+3. **Run another task** (e.g. Task 2)  
+   ```bash
+   docker run --rm sentence-transformers-mtl python 02_multitask_learning.py
+   ```
+
+4. **Open an interactive shell in the container**  
+   ```bash
+   docker run --rm -it sentence-transformers-mtl bash
+   ```
+
 
 ## License
 
