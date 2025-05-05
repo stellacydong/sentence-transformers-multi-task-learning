@@ -1,0 +1,193 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb, graphicx, hyperref, geometry}
+\geometry{margin=1in}
+\title{Sentence Pooling Strategies and Transformer Input Notes}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+\section\*{1. Pooling Strategies for Sentence Embeddings}
+
+\textbf{Are CLS and mean pooling the only strategies?} No. While [CLS] pooling and mean pooling are the most common, they are not the only options. Below are several alternative pooling techniques used in encoder-based models.
+
+\subsection\*{\textbullet\ Common Strategies}
+\begin{enumerate}
+\item \textbf{CLS Pooling} \\
+Uses the embedding at the [CLS] token (usually \texttt{hidden-states\[:, 0, :\]}). It's fast and used in many BERT-pretrained tasks.
+
+\item \textbf{Mean Pooling} \\
+Averages token embeddings across the sequence (excluding padding). Robust across various tasks.
+\end{enumerate}
+
+\subsection\*{\textbullet\ Other Strategies}
+\begin{enumerate}
+\item\[3.] \textbf{Max Pooling} \\
+Takes the maximum value in each embedding dimension:
+\begin{verbatim}
+input\_mask\_expanded = attention\_mask.unsqueeze(-1).expand(hidden\_states.size())
+hidden\_states\[input\_mask\_expanded == 0] = -1e9
+max\_pooled = torch.max(hidden\_states, dim=1).values
+\end{verbatim}
+
+\item\[4.] \textbf{Min Pooling} \\
+Takes the minimum value in each dimension (less common).
+
+\item\[5.] \textbf{Mean + Max Concatenation} \\
+Concatenates mean and max pooled embeddings:
+\begin{verbatim}
+pooled\_output = torch.cat(\[mean\_pooled, max\_pooled], dim=1)
+\end{verbatim}
+
+\item\[6.] \textbf{Attention Pooling} \\
+Learns a weighted sum of token embeddings:
+\begin{verbatim}
+weights = softmax(W @ hidden\_states)  # W is learnable
+attn\_pooled = torch.sum(weights \* hidden\_states, dim=1)
+\end{verbatim}
+
+\item\[7.] \textbf{First + Last Layer Averaging} \\
+Averages token embeddings from the first and last BERT layers.
+
+\item\[8.] \textbf{Token Dropout Pooling} \\
+Randomly drops tokens before pooling for regularization.
+\end{enumerate}
+
+\subsection\*{\textbullet\ Summary Table}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Strategy} & \textbf{Strength} & \textbf{Use Case} \\
+\hline
+CLS Pooling & Fast, simple & BERT-based classification \\
+Mean Pooling & Stable, general-purpose & Similarity, retrieval \\
+Max Pooling & Highlights strong signals & Saliency-sensitive tasks \\
+Mean + Max & Richer representation & General NLP embedding \\
+Attention Pooling & Task-adaptive & Supervised tasks \\
+First + Last Avg & Stabilization & Long/deep transformer models \\
+Token Dropout & Regularization & Data augmentation \\
+\hline
+\end{tabular}
+
+\section\*{2. Why Use \texttt{model\_name='bert-base-uncased'}}
+\begin{itemize}
+\item \texttt{bert}: BERT architecture (Bidirectional Encoder Representations from Transformers)
+\item \texttt{base}: 12 layers, 768 hidden dimensions, 110M parameters
+\item \texttt{uncased}: Ignores letter casing ("Apple" = "apple")
+\end{itemize}
+
+\subsection\*{\textbullet\ Alternative Pretrained Models}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Model} & \textbf{Description} & \textbf{When to Use} \\
+\hline
+bert-large-uncased & 24 layers, 340M params & Higher accuracy (GPU needed) \\
+bert-base-cased & Case-sensitive BERT & Preserve casing (e.g., NER) \\
+roberta-base & More robust pretraining & Often better than BERT \\
+distilbert-base-uncased & Lighter BERT & Fast and low memory \\
+albert-base-v2 & Parameter-shared BERT & Efficient alternative \\
+sentence-transformers/MiniLM & Compact, semantic search & Embeddings + speed \\
+deberta-base & SOTA transformer & Best for classification \\
+electra-base-discriminator & Discriminative pretraining & Efficient and accurate \\
+\hline
+\end{tabular}
+
+\section\*{3. Tokenizer Inputs}
+\begin{verbatim}
+encoded = tokenizer(sentences, padding=True, truncation=True, return\_tensors='pt')
+\end{verbatim}
+
+\subsection\*{\textbullet\ Explanation}
+\begin{itemize}
+\item \textbf{padding=True}: Pad to longest sentence in batch.
+\item \textbf{truncation=True}: Cut off input after 512 tokens (BERT max).
+\item \textbf{return\_tensors='pt'}: Return PyTorch tensors (\texttt{'tf'} for TensorFlow).
+\end{itemize}
+
+\subsection\*{\textbullet\ Outputs}
+\begin{itemize}
+\item \texttt{input\_ids}: Token IDs (integers from tokenizer vocab)
+\item \texttt{attention\_mask}: 1 for real tokens, 0 for padding
+\end{itemize}
+
+\section\*{4. What is a Token?}
+A token is a unit of text — often a word or subword — used by transformers. BERT typically uses WordPiece tokenization.
+
+Example:
+\begin{itemize}
+\item Input: "Hi" \$\rightarrow\$ \[101, 7632, 102]
+\item Input: "How are you?" \$\rightarrow\$ \[101, 2129, 2024, 2017, 102]
+\end{itemize}
+\[101] is [CLS], \[102] is \[SEP]
+
+\section\*{5. Why 512 Token Limit?}
+\begin{itemize}
+\item \textbf{Positional Embeddings}: BERT only has learned embeddings for the first 512 positions.
+\item \textbf{Quadratic Attention}: Memory cost \$\sim O(n^2)\$, where \$n\$ = sequence length.
+\end{itemize}
+
+\subsection\*{\textbullet\ Approximate Conversion}
+\begin{itemize}
+\item 512 tokens \$\approx\$ 350--400 English words
+\item About 1 page of text (single spaced)
+\end{itemize}
+
+\subsection\*{\textbullet\ Alternatives for Long Texts}
+\begin{itemize}
+\item Sliding Window
+\item Hierarchical Models
+\item Longformer, BigBird, LED
+\end{itemize}
+
+\section\*{6. Positional Embeddings}
+Transformers lack built-in word order. Positional embeddings provide this signal.
+
+\begin{itemize}
+\item \textbf{Learned}: One embedding per position (BERT)
+\item \textbf{Sinusoidal}: Fixed pattern (original Transformer)
+\item \textbf{Rotary (RoPE)}: Used in LLaMA, GPT-NeoX
+\end{itemize}
+
+\section\*{7. torch.no\_grad()}
+Use this during inference:
+\begin{itemize}
+\item Saves memory
+\item Disables gradient computation
+\item Prevents \texttt{.backward()} from being called
+\end{itemize}
+
+\section\*{8. Inference vs Training}
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Phase} & \textbf{Goal} & \textbf{Gradients?} & \textbf{Example} \\
+\hline
+Training & Learn from labeled data & Yes & Sentiment classification \\
+Inference & Make predictions & No & Generate embeddings or logits \\
+\hline
+\end{tabular}
+
+\section\*{9. input\_ids and attention\_mask}
+\begin{itemize}
+\item \textbf{input\_ids}: Tokenized sentence, shaped \[batch\_size, seq\_len]
+\item \textbf{attention\_mask}: Binary mask (1 = real token, 0 = pad)
+\end{itemize}
+
+\section\*{10. Model Output Types}
+\begin{itemize}
+\item \textbf{Token embeddings}: shape \[B, L, H]
+\item \textbf{Pooled sentence embedding}: shape \[B, H]
+\item \textbf{Logits}: shape \[B, num\_labels] for classification
+\end{itemize}
+
+You can reduce or change embedding size by applying a projection:
+\begin{verbatim}
+projected = nn.Linear(768, 128)(pooled\_output)
+\end{verbatim}
+
+\section\*{11. Why Use .cpu().numpy()?}
+PyTorch tensors on GPU must be moved to CPU before converting to NumPy:
+\begin{verbatim}
+embeddings\_np = embeddings.cpu().numpy()
+\end{verbatim}
+This avoids errors and allows export or further analysis in NumPy.
+
+\end{document}
